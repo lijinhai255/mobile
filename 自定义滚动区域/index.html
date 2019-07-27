@@ -43,7 +43,7 @@
             background-color: red;
             overflow: hidden;
         }
-        .list li{
+        .inner li{
             line-height: 30px;
             text-indent: 20px;
             border-bottom: 1px solid;
@@ -51,69 +51,116 @@
     </style>
     <script>
         function createList(){
-            var list = document.querySelector(".list")
+            var list = document.querySelector(".inner")
             var inner = "";
             for(var i = 0; i<100;i++){
                 inner += "<li>这是第"+i+"个li</li>"
             }
             list.innerHTML = inner
         }
+        // document.addEventListener("touchstart",function(e){
+        //     e.preventDefault();
+        // })
         window.onload =function(){
             createList()
-            var list = document.querySelector(".list")
-            //css(list,"translateY",100)
-            css(list,"translateZ",0.01)
-            console.log(css(list,"translateY"))
+            var wrap = document.querySelector(".wrap")  
+            console.log(2)  
+            mScroll({
+                el:wrap,
+                offBar:false
+                })
+        }
+        function mScroll(init){
+            console.log(init.el,3)
+            if(!init.el){
+                return 
+            }
+            console.log(111)
+            var wrap = init.el
+            var inner = init.el.children[0]
+            var scrollBar =document.createElement("div")
+            console.log(scrollBar,"1111")
+            //css(inner,"translateY",100)
+            css(inner,"translateZ",0.01)
             var startPoint  = 0
             var startEl = 0
             var lastY = 0
             var lastDis = 0
             var lastTime = 0
             var lastTimeDis = 0
-            list.addEventListener("touchstart",function(e){
+            if(!init.offBar){
+            var maxTranslate = wrap.clientHeight- inner.offsetHeight
+            var scale =  wrap.clientHeight/inner.offsetHeight
+            inner.style.minHeight = "100%"
+            scrollBar.style.cssText = "width:6px; background:rgba(0,0,0,.5);position:absolute;right:0;top:0;border-radius:3px;opacity:0;transition:.3s opacity"
+            wrap.appendChild(scrollBar)
+            }
+            inner.addEventListener("touchstart",function(e){
+                maxTranslate = wrap.clientHeight - inner.offsetHeight
+                
+                if(!init.offBar){
+                    if(maxTranslate>=0){
+                    scrollBar.display="none"
+                }else{
+                    scrollBar.display="block"
+                }
+                scale =  wrap.clientHeight/inner.offsetHeight
+                scrollBar.style.height = wrap.clientHeight*scale+"px"
+                }
+                clearInterval(inner.timer)
                 startPoint = e.changedTouches[0].pageY
-                startEl = css(list,"translateY")
+                startEl = css(inner,"translateY")
                 lastY = startEl
                 lastTime = new Date().getTime()
-                lastDis = 0
-
+                lastTimeDis = lastDis = 0;
+                (init.offBar)||(scrollBar.style.opacity = 1)
             })
-            list.addEventListener("touchmove",function(e){
+            inner.addEventListener("touchmove",function(e){
                 var nowTime = new Date().getTime()
                 var newPoint = e.changedTouches[0].pageY
                 var dis = newPoint - startPoint
                 var translateY = startEl + dis
-                css(list,"translateY",translateY)
+                css(inner,"translateY",translateY)
+                css(scrollBar,"translateY",-translateY*scale)
                 lastDis = translateY - lastY
                 lastY = translateY
                 lastTimeDis = nowTime - lastTime
                 lastTime = nowTime
             })
-            list.addEventListener('touchend',function(e){
+            inner.addEventListener('touchend',function(e){
+                var type ="easeOutStrong"
                 var speed = Math.round(lastDis / lastTimeDis *10)
-                var traget =Math.round(speed*20+css(list,"translateY"))
+                speed = lastTimeDis<=0? 0 :speed
+                var target =Math.round(speed*20+css(inner,"translateY"))
+                if(target>0){
+                    target = 0
+                    type = "backOut"
+                }else if(target<maxTranslate){
+                    target = maxTranslate
+                    type = "backOut"
+                } 
                 MTween({
-                    el:list,
-                    target:{translateY:traget},
-                    time:Math.abs(parseInt(traget*2)),
-                    type:"easeOutStrong",
+                    el:inner,
+                    target:{translateY:target},
+                    time:Math.round(Math.abs(target-css(inner,"translateY"))*3),
+                    type,
                     callIn:function(){
-                        console.log(1)
+                        // console.log(1)
+                        var translateY = css(inner,"translateY");
+                        (init.offBar)||css(scrollBar,"translateY",-translateY*scale);
+                    },
+                    callBack:function(){
+                        scrollBar.style.opacity = 0
                     }
                 })
             })
-
-
-
-
         }
-  
     </script>
 </head>
 <body>
     <div class="header">这是头部</div>
     <div class="wrap"> 
-        <ul class="list">
+        <ul class="inner">
 
         </ul>
     </div>
