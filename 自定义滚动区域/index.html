@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"  content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="./js/m.Tween2.js"></script>
+    <style>
+        *{
+            margin: 0;
+            padding:0;
+
+        }
+        .header,footer{
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            font-size: 20px;
+            color: #fff;
+            text-align: center;
+            background: #000;
+            line-height: 40px;
+        }
+        .footer{
+            position: absolute;
+            left: 0;
+            right: 0;
+            font-size: 20px;
+            color: #fff;
+            text-align: center;
+            background: #000;
+            line-height: 40px;
+            bottom: 0;
+        }
+        .wrap{
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 40px;
+            bottom: 40px;
+            background-color: red;
+            overflow: hidden;
+        }
+        .list li{
+            line-height: 30px;
+            text-indent: 20px;
+            border-bottom: 1px solid;
+        }
+    </style>
+    <script>
+        function createList(){
+            var list = document.querySelector(".list")
+            var inner = "";
+            for(var i = 0; i<100;i++){
+                inner += "<li>这是第"+i+"个li</li>"
+            }
+            list.innerHTML = inner
+        }
+        window.onload =function(){
+            createList()
+            var list = document.querySelector(".list")
+            //css(list,"translateY",100)
+            css(list,"translateZ",0.01)
+            console.log(css(list,"translateY"))
+            var startPoint  = 0
+            var startEl = 0
+            var lastY = 0
+            var lastDis = 0
+            var lastTime = 0
+            var lastTimeDis = 0
+            list.addEventListener("touchstart",function(e){
+                startPoint = e.changedTouches[0].pageY
+                startEl = css(list,"translateY")
+                lastY = startEl
+                lastTime = new Date().getTime()
+                lastDis = 0
+
+            })
+            list.addEventListener("touchmove",function(e){
+                var nowTime = new Date().getTime()
+                var newPoint = e.changedTouches[0].pageY
+                var dis = newPoint - startPoint
+                var translateY = startEl + dis
+                css(list,"translateY",translateY)
+                lastDis = translateY - lastY
+                lastY = translateY
+                lastTimeDis = nowTime - lastTime
+                lastTime = nowTime
+            })
+            list.addEventListener('touchend',function(e){
+                var speed = Math.round(lastDis / lastTimeDis *10)
+                var traget =Math.round(speed*20+css(list,"translateY"))
+                MTween({
+                    el:list,
+                    target:{translateY:traget},
+                    time:Math.abs(parseInt(traget*2)),
+                    type:"easeOutStrong",
+                    callIn:function(){
+                        console.log(1)
+                    }
+                })
+            })
+
+
+
+
+        }
+  
+    </script>
+</head>
+<body>
+    <div class="header">这是头部</div>
+    <div class="wrap"> 
+        <ul class="list">
+
+        </ul>
+    </div>
+    <div class="footer">这是底部</div>
+</body>
+</html>
